@@ -112,33 +112,114 @@ function fromJSON(proto, json) {
  *  For more examples see unit tests.
  */
 
+class SelectorBuilder {
+  constructor(value) {
+    this.stringClass = value;
+  }
+
+  element(value) {
+    if (this.stringClass.match(/:|\[|#|\./)) {
+      throw new Error('/Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element/');
+    }
+    this.stringClass = value;
+    throw new Error('/Element, id and pseudo-element should not occur more then one time inside the selector/');
+  }
+
+  id(value) {
+    if (this.stringClass.match(/:|\.|\[/)) {
+      throw new Error('/Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element/');
+    }
+    if (this.stringClass.includes('#')) {
+      throw new Error('/Element, id and pseudo-element should not occur more then one time inside the selector/');
+    }
+
+    this.stringClass += `#${value}`;
+    return this;
+  }
+
+  class(value) {
+    if (this.stringClass.match(/:|\[/)) {
+      throw new Error('/Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element/');
+    }
+    this.stringClass += `.${value}`;
+    return this;
+  }
+
+  attr(value) {
+    if (this.stringClass.includes(':')) {
+      throw new Error('/Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element/');
+    }
+    this.stringClass += `[${value}]`;
+    return this;
+  }
+
+  pseudoClass(value) {
+    if (this.stringClass.includes('::')) {
+      throw new Error('/Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element/');
+    }
+    this.stringClass += `:${value}`;
+    return this;
+  }
+
+  pseudoElement(value) {
+    if (this.stringClass.includes('::')) {
+      throw new Error('/Element, id and pseudo-element should not occur more then one time inside the selector/');
+    }
+    this.stringClass += `::${value}`;
+    return this;
+  }
+
+  stringify() {
+    const str = this.stringClass;
+    this.stringClass = '';
+    return str;
+  }
+}
+
 const cssSelectorBuilder = {
-  element(/* value */) {
-    throw new Error('Not implemented');
+  stringClass: '',
+  element(value) {
+    const el = new SelectorBuilder(value);
+    return el;
   },
 
-  id(/* value */) {
-    throw new Error('Not implemented');
+  id(value) {
+    const el = new SelectorBuilder(`#${value}`);
+    return el;
   },
 
-  class(/* value */) {
-    throw new Error('Not implemented');
+  class(value) {
+    const el = new SelectorBuilder(`.${value}`);
+    return el;
   },
 
-  attr(/* value */) {
-    throw new Error('Not implemented');
+  attr(value) {
+    const el = new SelectorBuilder(`[${value}]`);
+    return el;
   },
 
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
+  pseudoClass(value) {
+    const el = new SelectorBuilder(`:${value}`);
+    return el;
   },
 
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
+  pseudoElement(value) {
+    const el = new SelectorBuilder(`::${value}`);
+    return el;
   },
 
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
+  combine(selector1, combinator, selector2) {
+    this.stringClass = selector1.stringClass;
+    this.stringClass += ` ${combinator} `;
+    this.stringClass += selector2.stringClass;
+    const el = new SelectorBuilder(this.stringClass);
+    return el;
+  },
+
+  stringify() {
+    const str = this.stringClass;
+    this.stringClass = '';
+    return str;
   },
 };
 

@@ -133,8 +133,9 @@ function isTriangle(a, b, c) {
  *   { top:20, left:20, width: 20, height: 20 }    =>  false
  *
  */
-function doRectanglesOverlap(/* rect1, rect2 */) {
-  throw new Error('Not implemented');
+function doRectanglesOverlap(rect1, rect2) {
+  return !(rect1.left > rect2.left + rect2.width || rect2.left > rect1.left + rect1.width
+  || rect1.top > rect2.top + rect2.height || rect2.top > rect1.top + rect1.height);
 }
 
 /**
@@ -178,8 +179,13 @@ function isInsideCircle(circle, point) {
  *   'abracadabra'  => 'c'
  *   'entente' => null
  */
-function findFirstSingleChar(/* str */) {
-  throw new Error('Not implemented');
+function findFirstSingleChar(str) {
+  for (let i = 0; i < str.length; i += 1) {
+    if (str.indexOf(str[i], i + 1) === -1 && str.indexOf(str[i]) === i) {
+      return str[i];
+    }
+  }
+  return null;
 }
 
 /**
@@ -262,8 +268,14 @@ function reverseInteger(num) {
  *   5436468789016589 => false
  *   4916123456789012 => false
  */
-function isCreditCardNumber(/* ccn */) {
-  throw new Error('Not implemented');
+function isCreditCardNumber(ccn) {
+  const arr = ccn.toString().split('').reverse();
+  const result = arr.reduce((sum, el, index) => {
+    let num = index % 2 ? +el * 2 : +el;
+    num = num > 9 ? num - 9 : num;
+    return sum + num;
+  }, 0);
+  return !(result % 10);
 }
 
 /**
@@ -282,7 +294,7 @@ function isCreditCardNumber(/* ccn */) {
  */
 function getDigitalRoot(num) {
   const sum = num.toString().split('').reduce((a, c) => +a + +c);
-  return sum > 9 ? getDigitalRoot(sum) : sum;
+  return sum > 10 ? getDigitalRoot(sum) : sum;
 }
 
 /**
@@ -306,10 +318,29 @@ function getDigitalRoot(num) {
  *   '{)' = false
  *   '{[(<{[]}>)]}' = true
  */
-function isBracketsBalanced(/* str */) {
-  throw new Error('Not implemented');
-}
+function isBracketsBalanced(str) {
+  const bracketsList = {
+    ']': '[',
+    '}': '{',
+    ')': '(',
+    '>': '<',
+  };
 
+  const result = str.split('').reduce((stack, elem) => {
+    if (elem in bracketsList) {
+      if (stack[stack.length - 1] === bracketsList[elem]) {
+        stack.pop();
+      } else {
+        stack.push(elem);
+      }
+    } else {
+      stack.push(elem);
+    }
+    return stack;
+  }, []);
+
+  return !result.length;
+}
 
 /**
  * Returns the string with n-ary (binary, ternary, etc, where n <= 10)
@@ -347,8 +378,10 @@ function toNaryString(num, n) {
  *   ['/web/assets/style.css', '/.bin/mocha',  '/read.me'] => '/'
  *   ['/web/favicon.ico', '/web-scripts/dump', '/verbalizer/logs'] => '/'
  */
-function getCommonDirectoryPath(/* pathes */) {
-  throw new Error('Not implemented');
+function getCommonDirectoryPath(pathes) {
+  const crossing = pathes.map((elem) => elem.split('/')).reduce((arr1, arr2) => arr1.filter((elem) => arr2.includes(elem))).concat([''])
+    .join('/');
+  return crossing;
 }
 
 
@@ -370,8 +403,20 @@ function getCommonDirectoryPath(/* pathes */) {
  *                         [ 6 ]]
  *
  */
-function getMatrixProduct(/* m1, m2 */) {
-  throw new Error('Not implemented');
+function getMatrixProduct(m1, m2) {
+  const product = [];
+
+  for (let row = 0; row < m1.length; row += 1) {
+    product[row] = [];
+
+    for (let col = 0; col < m2[0].length; col += 1) {
+      const multipliedRow = m1[row].map((x, index) => x * m2[index][col]);
+
+      product[row][col] = multipliedRow.reduce((sum, x) => sum + x);
+    }
+  }
+
+  return product;
 }
 
 
@@ -405,8 +450,27 @@ function getMatrixProduct(/* m1, m2 */) {
  *    [    ,   ,    ]]
  *
  */
-function evaluateTicTacToePosition(/* position */) {
-  throw new Error('Not implemented');
+function evaluateTicTacToePosition(pos) {
+  let result;
+  for (let i = 0; i < 3; i += 1) {
+    if (pos[i][0] === pos[i][1] && pos[i][0] === pos[i][2]) {
+      [result] = pos[i];
+    }
+
+    if (pos[0][i] === pos[1][i] && pos[0][i] === pos[2][i]) {
+      result = pos[0][i];
+    }
+  }
+
+  if (pos[0][0] === pos[1][1] && pos[0][0] === pos[2][2]) {
+    [[result]] = pos;
+  }
+
+  if (pos[0][2] === pos[1][1] && pos[0][2] === pos[2][0]) {
+    [,, [result]] = pos;
+  }
+
+  return result;
 }
 
 
